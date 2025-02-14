@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ask Any</title>
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/javascript.min.js"></script>
+  <link id="theme-style" rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+  <style>
+    /* Use Roboto font for a modern look */
+    body {
+      font-family: 'Roboto', sans-serif;
+    }
+
+    /* Basic resets */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #0d1117;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    /* Fade-in animation for messages */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .message {
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    /* Header styling */
+    #header {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      background: #161b22;
+      border-bottom: 1px solid #30363d;
+      gap: 5px;
+    }
+
+    /* Menu button on left */
+    #header button {
+      background: #238636;
+      color: white;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    #header button:hover {
+      background: #2ea043;
+    }
+
+    #modelSelect {
+      padding: 6px;
+      border: none;
+      border-radius: 4px;
+      background: #21262d;
+      color: white;
+    }
+
+    .light-mode #modelSelect {
+      background: #f6f8fa;
+      color: #111827;
+      border: 1px solid #d1d5db;
+    }
+
+    /* Button styles for Ask, Stop, Cancel */
+    .ask-btn {
+      background: #238636;
+      color: white;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .ask-btn:hover {
+      background: #2ea043;
+    }
+
+    .stop-btn {
+      background: #b91c1c;
+      color: white;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .stop-btn:hover {
+      background: #dc2626;
+    }
+
+    .cancel-btn {
+      background: #6b806b;
+      color: white;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .cancel-btn:hover {
+      background: #4b5563;
+    }
+
+    /* Sidebar styling */
+    #sidebar {
+      position: fixed;
+      left: -320px;
+      top: 0;
+      width: 320px;
+      height: 100vh;
+      background: linear-gradient(135deg, #1f2937, #111827);
+      color: white;
+      overflow-y: auto;
+      transition: left 0.3s ease, background 0.3s ease;
+      padding: 15px;
+      z-index: 1000;
+      border-top-right-radius: 10px;
+      border-bottom-right-radius: 10px;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.6);
+    }
+
+    /* Sidebar light theme */
+    #sidebar.sidebar-light {
+      background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+      color: #111827;
+    }
+
+    #sidebar.open {
+      left: 0;
+    }
+
+    #sidebar h3 {
+      margin-top: 0;
+    }
+
+    .sidebar-section {
+      margin-bottom: 15px;
+    }
+
+    .sidebar-section>button,
+    .sidebar-section>input {
+      width: 100%;
+      margin-top: 5px;
+      padding: 6px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .sidebar-section>button {
+      background: #238636;
+      color: white;
+    }
+
+    .sidebar-section>button:hover {
+      background: #2ea043;
+    }
+
+    /* Chat History in Sidebar */
+    #chatHistoryList {
+      list-style: none;
+      padding: 0;
+    }
+
+    #chatHistoryList li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px;
+      border-bottom: 1px solid #30363d;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    #chatHistoryList li:hover {
+      background: #21262d;
+    }
+
+    .light-mode #chatHistoryList li:hover {
+      background: #e5e7eb;
+    }
+
+    /* Container for action buttons in each chat history entry */
+    .chat-actions {
+      display: flex;
+      gap: 5px;
+      margin-left: auto;
+    }
+
+    .export-chat-btn {
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background 0.3s;
+      align-self: center;
+    }
+
+    .export-chat-btn:hover {
+      background: #1d4ed8;
+    }
+
+    .delete-chat {
+      background: #b91c1c;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .delete-chat:hover {
+      background: #dc2626;
+    }
+
+    .delete-all-btn {
+      background: #b91c1c;
+      color: white;
+      width: 100%;
+      padding: 6px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background 0.3s;
+    }
+
+    .delete-all-btn:hover {
+      background: #dc2626;
+    }
+
+    .close-btn {
+      background: #6b7280;
+      color: white;
+      width: 100%;
+      padding: 6px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background 0.3s;
+    }
+
+    .close-btn:hover {
+      background: #4b5563;
+    }
+
+    /* Chat container */
+    #chat-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+      overflow-y: auto;
+    }
+
+    #chat {
+      flex: 1;
+      padding: 10px;
+      background: #161b22;
+      border-radius: 5px;
+      overflow-y: auto;
+    }
+
+    .message {
+      margin: 5px 0;
+      padding: 8px;
+      border-radius: 5px;
+      white-space: pre-wrap;
+      position: relative;
+    }
+
+    .user {
+      background: #238636;
+      text-align: left;
+    }
+
+    .ai {
+      background: #30363d;
+      text-align: left;
+      position: relative;
+    }
+
+    /* Ensure Edit button appears on a new line in user messages */
+    .message.user button.edit-btn {
+      display: block;
+      margin-top: 5px;
+    }
+
+    /* Code block styling with language label on left */
+    .code-block {
+      background: #282c34;
+      color: #abb2bf;
+      padding: 10px 10px 10px 50px;
+      /* extra left padding for language label */
+      border-radius: 5px;
+      font-family: monospace;
+      overflow-x: auto;
+      position: relative;
+    }
+
+    .code-lang {
+      position: absolute;
+      top: 0;
+      left: 0;
+      background: #444;
+      color: white;
+      padding: 2px 6px;
+      border-top-left-radius: 5px;
+      border-bottom-right-radius: 5px;
+      font-size: 10px;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: #444;
+      color: white;
+      border: none;
+      padding: 4px 6px;
+      cursor: pointer;
+      border-radius: 3px;
+      font-size: 12px;
+      transition: background 0.3s;
+    }
+
+    .copy-btn:hover {
+      background: #666;
+    }
+
+    /* Styled copy-response button */
+    .copy-response-btn {
+      background: #0ea5e9;
+      color: white;
+      padding: 4px 8px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .copy-response-btn:hover {
+      background: #0284c7;
+    }
+
+    /* Spinner styling */
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top: 4px solid white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Regenerate and Edit button styling (new line for controls) */
+    .message .controls {
+      display: block;
+      margin-top: 10px;
+    }
+
+    .regenerate-btn,
+    .edit-btn {
+      margin-top: 8px;
+      padding: 4px 8px;
+      font-size: 12px;
+      background: #444;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.3s;
+      display: inline-block;
+      margin-right: 5px;
+    }
+
+    .regenerate-btn:hover,
+    .edit-btn:hover {
+      background: #666;
+    }
+
+    /* Input Box styling with gap */
+    #inputBox {
+      display: flex;
+      gap: 10px;
+      padding: 10px;
+      background: #0d1117;
+      position: sticky;
+      bottom: 0;
+      border-top: 1px solid #30363d;
+    }
+
+    #inputBox input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #374151;
+      border-radius: 8px;
+      background: #1e293b;
+      color: white;
+      transition: background 0.3s, border 0.3s;
+    }
+
+    .light-mode #inputBox input {
+      background: #e5e7eb;
+      color: #111827;
+      border: 1px solid #d1d5db;
+    }
+
+    #inputBox button.cancel-btn {
+      margin-left: 5px;
+    }
+
+    /* Edit input box styling */
+    .edit-input {
+      width: 70%;
+      padding: 6px;
+      border: 1px solid #374151;
+      border-radius: 4px;
+      background: #1e293b;
+      color: white;
+      font-family: inherit;
+      font-size: 14px;
+      transition: background 0.3s, border 0.3s;
+    }
+
+    .light-mode .edit-input {
+      background: #e5e7eb;
+      color: #111827;
+      border: 1px solid #d1d5db;
+    }
+
+    /* Light Mode Overrides */
+    .light-mode {
+      background-color: white !important;
+      color: black !important;
+    }
+
+    .light-mode #header,
+    .light-mode #inputBox {
+      background: #f6f8fa !important;
+      border-color: #d0d7de;
+    }
+
+    .light-mode #chat {
+      background: white !important;
+    }
+
+    .light-mode .user {
+      background: #2ea043 !important;
+    }
+
+    .light-mode .ai {
+      background: #eaeef2 !important;
+    }
+
+    .light-mode .code-block {
+      background: #f6f8fa !important;
+      color: black !important;
+    }
+
+    /* Responsive adjustments */
+    @media screen and (max-width: 600px) {
+      #sidebar {
+        width: 100%;
+        left: -100%;
+      }
+
+      #sidebar.open {
+        left: 0;
+      }
+
+      #header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      #header button,
+      #header select {
+        width: 100%;
+      }
+    }
+
+    /* Modal Styling */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.4);
+      animation: fadeInModal 0.3s;
+    }
+
+    @keyframes fadeInModal {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    .modal-content {
+      background-color: #1f2937;
+      margin: 15% auto;
+      padding: 20px;
+      border: 1px solid #374151;
+      width: 300px;
+      border-radius: 8px;
+      text-align: center;
+      color: white;
+      animation: slideIn 0.3s;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateY(-20px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .light-mode .modal-content {
+      background-color: #f3f4f6;
+      border: 1px solid #d1d5db;
+      color: #111827;
+    }
+
+    .modal-content button {
+      background: #238636;
+      color: white;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 0 5px;
+      transition: background 0.3s;
+    }
+
+    .modal-content button:hover {
+      background: #2ea043;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Custom Modal for Alerts/Confirms -->
+  <div id="customModal" class="modal">
+    <div class="modal-content">
+      <p id="modalMessage"></p>
+      <div id="modalButtons" style="margin-top:15px;"></div>
+    </div>
+  </div>
+
+  <!-- Header: Menu button on left, then model selector -->
+  <div id="header">
+    <button id="menuButton" onclick="toggleSidebar()">☰ Menu</button>
+    <select id="modelSelect">
+      <option value="google/gemini-2.0-flash-lite-preview-02-05:free">Gemini Flash Lite 2.0 Preview</option>
+      <option value="cognitivecomputations/dolphin3.0-r1-mistral-24b:free">Dolphin3.0 R1 Mistral 24b</option>
+      <option value="cognitivecomputations/dolphin3.0-mistral-24b:free">Dolphin3.0 R1 Mistral 24b</option>
+      <option value="google/gemini-2.0-flash-lite-preview-02-05:free">Gemini Flash Lite 2.0 Preview</option>
+      <option value="google/gemini-2.0-pro-exp-02-05:free">Gemini Pro 2.0 Experimental</option>
+      <option value="qwen/qwen-vl-plus:free">Qwen VL Plus</option>
+      <option value="qwen/qwen2.5-vl-72b-instruct:free">Qwen2.5 VL 72B Instruct</option>
+      <option value="mistralai/mistral-small-24b-instruct-2501:free">Mistral Small 3</option>
+      <option value="deepseek/deepseek-r1-distill-llama-70b:free">R1 Distill Llama 70B</option>
+    </select>
+  </div>
+
+  <!-- Sidebar: Contains Settings, Chat Controls, and Chat History -->
+  <div id="sidebar">
+    <div class="sidebar-section">
+      <h3>Settings</h3>
+      <input id="apiKey" type="text" placeholder="Enter API Key..." />
+      <button onclick="saveApiKey()">Save API Key</button>
+    </div>
+    <div class="sidebar-section">
+      <button onclick="toggleDarkMode()">Toggle Theme</button>
+      <button onclick="newChat()">New Chat</button>
+      <button class="delete-all-btn" onclick="deleteAllChats()">Delete All Chats</button>
+    </div>
+    <div class="sidebar-section">
+      <h3>Chat History</h3>
+      <ul id="chatHistoryList"></ul>
+    </div>
+    <button class="close-btn" onclick="toggleSidebar()">Close</button>
+  </div>
+
+  <!-- Main Chat Area -->
+  <div id="chat-container">
+    <div id="chat">
+      <div class="message ai">
+        Welcome to <strong>Ask Any</strong>! Type your question below to get started.
+      </div>
+    </div>
+  </div>
+
+  <!-- Input Box -->
+  <div id="inputBox">
+    <input id="question" type="text" placeholder="Type a message..." />
+    <button id="askButton" class="ask-btn" onclick="ask()">Ask</button>
+    <button class="cancel-btn" onclick="clearChat()">Clear</button>
+  </div>
+
+  <script>
+    const vscode = acquireVsCodeApi();
+    let currentLoadingMessage = null;  // Holds the AI message container currently being fetched
+    let isRequestActive = false;       // Indicates if a request is active (to toggle button)
+    let messageIdCounter = 0;          // Unique counter for AI messages
+
+    // --- Helper Functions to Disable/Enable Controls During Typing ---
+    function disableInteractiveControls() {
+      const stopBtn = document.getElementById("askButton");
+      if (stopBtn) stopBtn.disabled = true;
+      const editButtons = document.querySelectorAll(".edit-btn");
+      editButtons.forEach(btn => btn.disabled = true);
+    }
+    function enableInteractiveControls() {
+      const stopBtn = document.getElementById("askButton");
+      if (stopBtn) stopBtn.disabled = false;
+      const editButtons = document.querySelectorAll(".edit-btn");
+      editButtons.forEach(btn => btn.disabled = false);
+    }
+
+    // --- Custom Modal Functions ---
+    function showCustomModal(message, buttons) {
+      const modal = document.getElementById("customModal");
+      const modalMessage = document.getElementById("modalMessage");
+      const modalButtons = document.getElementById("modalButtons");
+      modalMessage.textContent = message;
+      modalButtons.innerHTML = "";
+      buttons.forEach(btn => {
+        const button = document.createElement("button");
+        button.textContent = btn.text;
+        button.onclick = () => {
+          modal.style.display = "none";
+          btn.action();
+        };
+        modalButtons.appendChild(button);
+      });
+      modal.style.display = "block";
+    }
+    function customAlert(message, callback) {
+      showCustomModal(message, [{
+        text: "OK",
+        action: function () { if (callback) callback(); }
+      }]);
+    }
+    function customConfirm(message, callback) {
+      showCustomModal(message, [
+        { text: "Yes", action: () => callback(true) },
+        { text: "No", action: () => callback(false) }
+      ]);
+    }
+
+    // --- Apply saved theme on load ---
+    function applyTheme() {
+      const theme = localStorage.getItem("theme");
+      if (theme === "light") {
+        document.body.classList.add("light-mode");
+        document.getElementById("theme-style").href = "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css";
+        document.getElementById("sidebar").classList.add("sidebar-light");
+      } else {
+        document.body.classList.remove("light-mode");
+        document.getElementById("theme-style").href = "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css";
+        document.getElementById("sidebar").classList.remove("sidebar-light");
+      }
+    }
+    applyTheme();
+
+    // --- Toggle Theme: Changes main and sidebar, and saves setting ---
+    function toggleDarkMode() {
+      document.body.classList.toggle("light-mode");
+      if (document.body.classList.contains("light-mode")) {
+        document.getElementById("theme-style").href = "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css";
+        document.getElementById("sidebar").classList.add("sidebar-light");
+        localStorage.setItem("theme", "light");
+      } else {
+        document.getElementById("theme-style").href = "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css";
+        document.getElementById("sidebar").classList.remove("sidebar-light");
+        localStorage.setItem("theme", "dark");
+      }
+    }
+
+    // --- Export Chat for a specific chat ---
+    function exportChat(chatId) {
+      const chatHistory = JSON.parse(localStorage.getItem("chatHistory") || "[]");
+      const chat = chatHistory.find(c => c.id === chatId);
+      if (chat) {
+        vscode.postMessage({
+          command: "exportChat",
+          chatContent: chat.content,
+          chatName: chat.name
+        });
+      }
+    }
+
+    // --- Autosave Current Chat ---
+    function autosaveChat() {
+      const chatDiv = document.getElementById("chat");
+      const chatContent = chatDiv.innerHTML;
+      if (!chatContent.trim()) return;
+      const firstUserMsg = chatDiv.querySelector(".message.user .message-text");
+      const chatName = firstUserMsg ? firstUserMsg.textContent : "Unnamed Chat";
+      const currentChat = { id: "chat-" + new Date().getTime(), timestamp: new Date().toLocaleString(), name: chatName, content: chatContent };
+      localStorage.setItem("autosaveChat", JSON.stringify(currentChat));
+    }
+
+    // --- New Chat Feature ---
+    function newChat() {
+      const autosaved = localStorage.getItem("autosaveChat");
+      if (autosaved) {
+        let chatHistory = JSON.parse(localStorage.getItem("chatHistory") || "[]");
+        chatHistory.push(JSON.parse(autosaved));
+        localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
+        localStorage.removeItem("autosaveChat");
+      }
+      // Clear the chat container and insert welcome message.
+      const chat = document.getElementById("chat");
+      chat.innerHTML = `<div class="message ai">Welcome to <strong>Ask Any</strong>! Type your question below to get started.</div>`;
+      messageIdCounter = 0;
+      isRequestActive = false;
+      const askButtonElem = document.getElementById("askButton");
+      askButtonElem.textContent = "Ask";
+      askButtonElem.className = "ask-btn";
+      askButtonElem.onclick = ask;
+      toggleSidebar();
+    }
+
+
+    // --- Sending a message ---
+    function ask() {
+      const input = document.getElementById("question");
+      const chat = document.getElementById("chat");
+      const question = input.value.trim();
+      if (!question) return;
+
+      // Remove welcome message if present.
+      if (chat.children.length === 1 &&
+        chat.children[0].innerHTML.indexOf("Welcome to <strong>Ask Any</strong>!") !== -1) {
+        chat.innerHTML = "";
+      }
+
+      // Append user message with Edit button on new line.
+      const userMessageContainer = document.createElement("div");
+      userMessageContainer.className = "message user";
+      userMessageContainer.innerHTML = `<strong>You:</strong> `;
+      const messageText = document.createElement("span");
+      messageText.className = "message-text";
+      messageText.textContent = question;
+      userMessageContainer.appendChild(messageText);
+      userMessageContainer.appendChild(document.createElement("br"));
+      const editButton = document.createElement("button");
+      editButton.className = "edit-btn";
+      editButton.textContent = "Edit";
+      userMessageContainer.appendChild(editButton);
+      chat.appendChild(userMessageContainer);
+
+      input.value = "";
+
+      // Append temporary AI message container.
+      currentLoadingMessage = document.createElement("div");
+      currentLoadingMessage.className = "message ai";
+      currentLoadingMessage.dataset.prompt = question;
+      currentLoadingMessage.id = "ai-msg-" + (++messageIdCounter);
+      currentLoadingMessage.innerHTML = `<div><span class="spinner"></span> <em>Thinking...</em></div>`;
+      chat.appendChild(currentLoadingMessage);
+      chat.scrollTop = chat.scrollHeight;
+
+      // Pair the user message with its AI response.
+      userMessageContainer.dataset.aiId = currentLoadingMessage.id;
+
+      // Toggle Ask button to Stop.
+      isRequestActive = true;
+      const askButtonElem = document.getElementById("askButton");
+      askButtonElem.textContent = "Stop";
+      askButtonElem.className = "stop-btn";
+      askButtonElem.onclick = stop;
+
+      // Send the request.
+      vscode.postMessage({
+        command: "ask",
+        text: question,
+        model: document.getElementById("modelSelect").value,
+        apiKey: localStorage.getItem("apiKey") || ""
+      });
+
+      autosaveChat();
+    }
+
+    // --- Cancel (Stop) a request ---
+    function stop() {
+      vscode.postMessage({ command: "stop" });
+      if (currentLoadingMessage) {
+        currentLoadingMessage.innerHTML = "<em>Request cancelled.</em>";
+        currentLoadingMessage = null;
+      }
+      isRequestActive = false;
+      const askButtonElem = document.getElementById("askButton");
+      askButtonElem.textContent = "Ask";
+      askButtonElem.className = "ask-btn";
+      askButtonElem.onclick = ask;
+      autosaveChat();
+    }
+
+    // --- Simulate Typing Effect with Live Formatting ---
+    function simulateTyping(element, fullText, speed = 2) {
+      disableInteractiveControls();
+      let index = 0;
+      let typedText = "";
+      const interval = setInterval(() => {
+        typedText += fullText[index];
+        element.innerHTML = formatMessageContent(typedText);
+        index++;
+        if (index >= fullText.length) {
+          clearInterval(interval);
+          // For the last AI message, show controls.
+          const chat = document.getElementById("chat");
+          const aiMessages = chat.querySelectorAll(".message.ai");
+          if (aiMessages.length > 0) {
+            // Remove controls from all except last.
+            aiMessages.forEach((msg, i) => {
+              if (i < aiMessages.length - 1) {
+                const ctrl = msg.querySelector(".controls");
+                if (ctrl) ctrl.remove();
+              }
+            });
+            addRegenerateAndCopyButtons(aiMessages[aiMessages.length - 1]);
+          }
+          enableInteractiveControls();
+          const askButtonElem = document.getElementById("askButton");
+          askButtonElem.textContent = "Ask";
+          askButtonElem.className = "ask-btn";
+          askButtonElem.onclick = ask;
+          autosaveChat();
+          hljs.highlightAll();
+        }
+      }, speed);
+    }
+
+    // --- Add Regenerate and Copy Response Buttons (only on last AI message) ---
+    function addRegenerateAndCopyButtons(container) {
+      const chat = document.getElementById("chat");
+      const aiMessages = chat.querySelectorAll(".message.ai");
+      if (aiMessages[aiMessages.length - 1] !== container) return;
+      const btnContainer = document.createElement("div");
+      btnContainer.className = "controls";
+      const regenBtn = document.createElement("button");
+      regenBtn.textContent = "Regenerate Response";
+      regenBtn.className = "regenerate-btn";
+      regenBtn.dataset.action = "regenerate";
+      const copyBtn = document.createElement("button");
+      copyBtn.textContent = "Copy Response";
+      copyBtn.className = "copy-response-btn";
+      btnContainer.appendChild(regenBtn);
+      btnContainer.appendChild(copyBtn);
+      container.appendChild(document.createElement("br"));
+      container.appendChild(btnContainer);
+    }
+
+    // --- Regenerate the AI response ---
+    function regenerateResponse(container) {
+      if (isRequestActive) stop();
+      const promptText = container.dataset.prompt;
+      if (!promptText) return;
+      isRequestActive = true;
+      const askButtonElem = document.getElementById("askButton");
+      askButtonElem.textContent = "Stop";
+      askButtonElem.className = "stop-btn";
+      askButtonElem.onclick = stop;
+      container.innerHTML = `<div><span class="spinner"></span> <em>Regenerating...</em></div>`;
+      currentLoadingMessage = container;
+      vscode.postMessage({
+        command: "ask",
+        text: promptText,
+        model: document.getElementById("modelSelect").value,
+        apiKey: localStorage.getItem("apiKey") || ""
+      });
+    }
+
+    // --- Attach interactive controls to loaded chat ---
+    function attachChatInteractivity() {
+      const aiMessages = document.querySelectorAll("#chat .message.ai");
+      if (aiMessages.length > 0) {
+        aiMessages.forEach(msg => {
+          const ctrl = msg.querySelector(".controls");
+          if (ctrl) ctrl.remove();
+        });
+        addRegenerateAndCopyButtons(aiMessages[aiMessages.length - 1]);
+      }
+    }
+
+    // --- Helper functions to disable/enable controls during typing ---
+    function disableInteractiveControls() {
+      const stopBtn = document.getElementById("askButton");
+      if (stopBtn) stopBtn.disabled = true;
+      const editButtons = document.querySelectorAll(".edit-btn");
+      editButtons.forEach(btn => btn.disabled = true);
+    }
+    function enableInteractiveControls() {
+      const stopBtn = document.getElementById("askButton");
+      if (stopBtn) stopBtn.disabled = false;
+      const editButtons = document.querySelectorAll(".edit-btn");
+      editButtons.forEach(btn => btn.disabled = false);
+    }
+
+    // --- Listen for responses from the extension ---
+    window.addEventListener("message", (event) => {
+      const message = event.data;
+      const chat = document.getElementById("chat");
+      if (message.command === "reply") {
+        if (!isRequestActive) return;
+        if (currentLoadingMessage) {
+          simulateTyping(currentLoadingMessage, message.text);
+          currentLoadingMessage = null;
+        } else {
+          chat.innerHTML += formatMessage(message.text);
+          const askButtonElem = document.getElementById("askButton");
+          askButtonElem.textContent = "Ask";
+          askButtonElem.className = "ask-btn";
+          askButtonElem.onclick = ask;
+        }
+        chat.scrollTop = chat.scrollHeight;
+      }
+    });
+
+    // --- Format text (basic markdown-like formatting) ---
+    function formatMessageContent(text) {
+      text = text.replace(/\*\*\s*(.*?)\s*\*\*/g, "<strong>$1</strong>");
+      text = text.replace(/\*\s*(.*?)\s*\*/g, "<em>$1</em>");
+      text = text.replace(/(\n|^)\s*\*\s(.*?)(\n|$)/g, "<li>$2</li>");
+      text = text.replace(/(<li>.*<\/li>)/g, "<ul>$1</ul>");
+      text = text.replace(
+        /```(\w+)?\n([\s\S]*?)```/g,
+        (_, lang, code) => {
+          return `<div class="code-block">
+            <span class="code-lang">${lang || "code"}</span>
+            <button class="copy-btn" onclick="copyToClipboard(event, this)">📋 Copy</button>
+            <pre><code class="hljs ${lang || "plaintext"}">${escapeHTML(code)}</code></pre>
+          </div>`;
+        }
+      );
+      return text;
+    }
+    function formatMessage(text) {
+      return `<div class='message ai'>${formatMessageContent(text)}</div>`;
+    }
+
+    // --- Escape HTML ---
+    function escapeHTML(str) {
+      return str.replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    // --- Copy to Clipboard ---
+    function copyToClipboard(event, button) {
+      event.stopPropagation();
+      navigator.clipboard.writeText(button.nextElementSibling.innerText).then(() => {
+        button.innerText = "✔ Copied!";
+        setTimeout(() => (button.innerText = "📋 Copy"), 1000);
+      });
+    }
+
+    // --- Save API Key (from sidebar) using custom alert ---
+    function saveApiKey() {
+      const apiKey = document.getElementById("apiKey").value;
+      localStorage.setItem("apiKey", apiKey);
+      customAlert("API Key saved!");
+    }
+
+    // --- Delete All Chats using custom confirm ---
+    function deleteAllChats() {
+      customConfirm("Are you sure you want to delete all chats?", function (result) {
+        if (result) {
+          localStorage.removeItem("chatHistory");
+          localStorage.removeItem("autosaveChat");
+          updateChatHistoryList();
+          customAlert("All chats deleted.");
+          newChat();
+          toggleSidebar();
+        }
+      });
+    }
+
+    // --- Clear Chat ---
+    function clearChat() {
+      document.getElementById("chat").innerHTML = "";
+      autosaveChat();
+    }
+
+    // --- Editing User Messages using event delegation ---
+    function handleEditClick(button) {
+      if (button.textContent.trim() === "Edit") {
+        doEdit(button);
+      } else {
+        doSave(button);
+      }
+    }
+    function doEdit(button) {
+      const messageContainer = button.parentElement;
+      const textSpan = messageContainer.querySelector(".message-text");
+      const originalText = textSpan.textContent;
+      const inputField = document.createElement("input");
+      inputField.type = "text";
+      inputField.value = originalText;
+      inputField.className = "edit-input";
+      messageContainer.replaceChild(inputField, textSpan);
+      button.textContent = "Save";
+      button._inputField = inputField;
+      // Add a Cancel button next to the Save button.
+      const cancelBtn = document.createElement("button");
+      cancelBtn.className = "edit-btn cancel-edit-btn";
+      cancelBtn.textContent = "Cancel";
+      cancelBtn.onclick = function () {
+        const restoredSpan = document.createElement("span");
+        restoredSpan.className = "message-text";
+        restoredSpan.textContent = originalText;
+        messageContainer.replaceChild(restoredSpan, inputField);
+        cancelBtn.remove();
+        button.textContent = "Edit";
+      };
+      messageContainer.appendChild(cancelBtn);
+    }
+    function doSave(button) {
+      const messageContainer = button.parentElement;
+      const inputField = button._inputField;
+      if (!inputField) return;
+      const newText = inputField.value;
+      const newSpan = document.createElement("span");
+      newSpan.className = "message-text";
+      newSpan.textContent = newText;
+      messageContainer.replaceChild(newSpan, inputField);
+      // Remove the cancel button if it exists.
+      const cancelBtn = messageContainer.querySelector(".cancel-edit-btn");
+      if (cancelBtn) cancelBtn.remove();
+      button.textContent = "Edit";
+      delete button._inputField;
+      // Clear all messages below the edited user message.
+      const chat = document.getElementById("chat");
+      const children = Array.from(chat.children);
+      const index = children.indexOf(messageContainer);
+      for (let i = children.length - 1; i > index; i--) {
+        chat.removeChild(children[i]);
+      }
+      // Create a new AI message container and regenerate response using the new text.
+      const aiContainer = document.createElement("div");
+      aiContainer.className = "message ai";
+      aiContainer.dataset.prompt = newText;
+      aiContainer.id = "ai-msg-" + (++messageIdCounter);
+      aiContainer.innerHTML = `<div><span class="spinner"></span> <em>Thinking...</em></div>`;
+      chat.appendChild(aiContainer);
+      currentLoadingMessage = aiContainer;
+      regenerateResponse(aiContainer);
+      autosaveChat();
+    }
+
+    // --- Sidebar Functions ---
+    function toggleSidebar() {
+      const sidebar = document.getElementById("sidebar");
+      sidebar.classList.toggle("open");
+      updateChatHistoryList();
+    }
+    function updateChatHistoryList() {
+      const chatHistory = JSON.parse(localStorage.getItem("chatHistory") || "[]");
+      const list = document.getElementById("chatHistoryList");
+      list.innerHTML = "";
+      chatHistory.forEach(chat => {
+        const li = document.createElement("li");
+        li.style.justifyContent = "space-between";
+        li.style.alignItems = "center";
+        const infoSpan = document.createElement("span");
+        infoSpan.textContent = `${chat.name} - ${chat.timestamp}`;
+        infoSpan.onclick = () => loadChat(chat.id);
+        li.appendChild(infoSpan);
+        const actionsDiv = document.createElement("div");
+        actionsDiv.className = "chat-actions";
+        actionsDiv.style.display = "flex";
+        actionsDiv.style.gap = "5px";
+        const exportBtn = document.createElement("button");
+        exportBtn.className = "export-chat-btn";
+        exportBtn.textContent = "Export";
+        exportBtn.onclick = (e) => {
+          e.stopPropagation();
+          exportChat(chat.id);
+        };
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "delete-chat";
+        deleteBtn.textContent = "X";
+        deleteBtn.onclick = (e) => {
+          e.stopPropagation();
+          deleteChat(chat.id);
+        };
+        actionsDiv.appendChild(exportBtn);
+        actionsDiv.appendChild(deleteBtn);
+        li.appendChild(actionsDiv);
+        list.appendChild(li);
+      });
+    }
+    function loadChat(chatId) {
+      const chatHistory = JSON.parse(localStorage.getItem("chatHistory") || "[]");
+      const chat = chatHistory.find(c => c.id === chatId);
+      if (chat) {
+        document.getElementById("chat").innerHTML = chat.content;
+        hljs.highlightAll();
+        attachChatInteractivity();
+      }
+      toggleSidebar();
+    }
+    function deleteChat(chatId) {
+      let chatHistory = JSON.parse(localStorage.getItem("chatHistory") || "[]");
+      chatHistory = chatHistory.filter(chat => chat.id !== chatId);
+      localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
+      updateChatHistoryList();
+      customAlert("Chat deleted.");
+    }
+
+    // --- Attach interactive controls to loaded chat ---
+    function attachChatInteractivity() {
+      const aiMessages = document.querySelectorAll("#chat .message.ai");
+      if (aiMessages.length > 0) {
+        aiMessages.forEach(msg => {
+          const ctrl = msg.querySelector(".controls");
+          if (ctrl) ctrl.remove();
+        });
+        addRegenerateAndCopyButtons(aiMessages[aiMessages.length - 1]);
+      }
+    }
+
+    // --- Event Delegation for Chat Container ---
+    document.getElementById("chat").addEventListener("click", function (event) {
+      const target = event.target;
+      if (target.classList.contains("edit-btn")) {
+        handleEditClick(target);
+      } else if (target.classList.contains("regenerate-btn")) {
+        event.stopPropagation();
+        const messageContainer = target.closest(".message.ai");
+        if (messageContainer) {
+          regenerateResponse(messageContainer);
+        }
+      } else if (target.classList.contains("copy-response-btn")) {
+        event.stopPropagation();
+        const container = target.closest(".message.ai");
+        if (container) {
+          const textToCopy = container.innerText;
+          navigator.clipboard.writeText(textToCopy).then(() => {
+            customAlert("Response copied to clipboard!");
+          });
+        }
+      }
+    });
+
+    // --- Event Listeners ---
+    document.getElementById("question").addEventListener("keydown", (event) => {
+      if (event.key === "Enter") ask();
+    });
+    document.getElementById("apiKey").value = localStorage.getItem("apiKey") || "";
+  </script>
+</body>
+
+</html>

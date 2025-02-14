@@ -1,0 +1,46 @@
+{
+  "name": "ask-any",
+  "displayName": "Ask Any",
+  "description": "A VS Code extension that allows users to chat with OpenRouter AI.",
+  "version": "0.0.1",
+    "publisher": "NSTechBytes",
+  "icon": "images/Ask-Any.png",
+  "engines": {
+    "vscode": "^1.97.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+   
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "askAny",
+          "title": "Ask Any",
+          "icon": "images/icon.png"
+        }
+      ]
+    },
+    "views": {
+      "askAny": [
+        {
+          "id": "askAnyView",
+          "name": "Chat",
+          "type": "webview"
+        }
+      ]
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NSTechBytes/ask-any"
+  },
+  "homepage": "https://github.com/NSTechBytes/ask-any",
+  "bugs": {
+    "url": "https://github.com/NSTechBytes/ask-any/issues"
+  }
+}
